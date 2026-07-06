@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تفنگ شکاری</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif;user-select:none}
+  body{background:#000;min-height:100vh;color:#fff;overflow:hidden}
+  #app{width:100vw;height:100vh;position:relative}
+
+  /* ── Screens ── */
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#0a1f15,#0e3a25,#1b5a3a);}
+  .screen.active{display:flex}
+  h1{font-size:2.8rem;margin-bottom:20px;text-shadow:4px 4px 0 #000,0 0 20px #ffd700;color:#ffd700;letter-spacing:2px}
+  .btn{padding:14px 36px;font-size:1.2rem;margin:8px;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(180deg,#d4a017,#b8860b);color:#000;font-weight:bold;box-shadow:0 6px 0 #6b4e0a,0 8px 20px rgba(0,0,0,0.4);transition:all .1s;text-shadow:1px 1px 0 rgba(255,255,255,0.2)}
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 #6b4e0a}
+  .btn.green{background:linear-gradient(180deg,#2ecc71,#1f8b4c);color:#fff;box-shadow:0 6px 0 #0e4a28}
+  .btn.red{background:linear-gradient(180deg,#e74c3c,#a8231c);color:#fff;box-shadow:0 6px 0 #62140e}
+  .btn.back{background:#5a6268;color:#fff;box-shadow:0 4px 0 #343a40;position:absolute;top:15px;left:15px;padding:8px 18px;font-size:.9rem}
+  input{padding:12px;font-size:1rem;margin:6px;border-radius:10px;border:2px solid #ffd700;background:#0a1f15;color:#fff;width:260px;text-align:center;box-shadow:inset 0 2px 8px rgba(0,0,0,0.5)}
+  .record{background:rgba(0,0,0,.5);padding:10px 20px;border-radius:12px;margin:10px;border:1px solid #ffd700;backdrop-filter:blur(5px)}
+
+  /* ── HUD ── */
+  #hud{position:absolute;top:0;left:0;right:0;padding:10px 15px;display:flex;justify-content:space-between;flex-wrap:wrap;background:rgba(0,0,0,.75);z-index:10;font-size:.9rem;font-weight:bold;border-bottom:2px solid #ffd700;backdrop-filter:blur(8px)}
+  #hud div{background:rgba(255,215,0,0.15);padding:4px 10px;border-radius:8px;margin:2px}
+
+  /* ── Game Area ── */
+  #gameArea{position:absolute;inset:0;overflow:hidden;perspective:1000px;cursor:crosshair}
+  /* آسمون */
+  #sky{position:absolute;top:0;left:0;right:0;height:70%;background:linear-gradient(180deg,#1e3c72 0%,#2a5298 30%,#6db3f2 60%,#b6dffd 85%,#d4e8fc 100%);overflow:hidden}
+  .cloud{position:absolute;background:white;border-radius:50%;opacity:0.85;filter:blur(8px);box-shadow:0 0 40px rgba(255,255,255,0.3)}
+  .cloud::before,.cloud::after{content:'';position:absolute;background:inherit;border-radius:inherit}
+  .cloud::before{width:60%;height:60%;top:-30%;left:20%}
+  .cloud::after{width:80%;height:80%;top:-50%;left:-10%}
+  .cloud1{width:120px;height:60px;top:10%;left:20%;animation:drift 25s linear infinite}
+  .cloud2{width:160px;height:70px;top:25%;left:70%;animation:drift 35s linear infinite reverse}
+  .cloud3{width:100px;height:50px;top:45%;left:50%;animation:drift 30s linear infinite}
+  .cloud4{width:140px;height:65px;top:15%;left:-20%;animation:drift 40s linear infinite}
+  @keyframes drift{0%{transform:translateX(0)}100%{transform:translateX(110vw)}}
+
+  /* کوه‌ها */
+  #mountains{position:absolute;bottom:45%;left:0;right:0;height:30%;z-index:0}
+  .mountain{position:absolute;bottom:0;width:0;height:0;border-style:solid;border-color:transparent transparent #4a6b4a transparent}
+  .mountain1{border-width:0 150px 200px 150px;left:10%}
+  .mountain2{border-width:0 200px 250px 200px;left:40%}
+  .mountain3{border-width:0 120px 150px 120px;left:70%}
+  .mountain::after{content:'';position:absolute;top:40px;left:-50px;width:100px;height:100px;background:#fff;border-radius:50%;opacity:0.2}
+  /* زمین */
+  #ground{position:absolute;bottom:0;left:0;right:0;height:58%;background:linear-gradient(180deg,#5b8c3e 0%,#3f612a 20%,#2e471e 50%,#1a2e0f 100%);transform-origin:top center;transform:perspective(500px) rotateX(60deg);z-index:1;box-shadow:0 0 30px rgba(0,0,0,0.6)}
+  #ground::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent 30px,rgba(0,0,0,.1) 30px,rgba(0,0,0,.1) 32px);}
+
+  /* درخت‌ها */
+  .tree{position:absolute;z-index:2;pointer-events:none;filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.5))}
+  .tree::before,.tree::after{content:'';position:absolute;left:50%;transform:translateX(-50%)}
+  .tree::before{width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:45px solid #1e4a1e}
+  .tree::after{top:20px;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:35px solid #2d6b2d}
+  .tree .trunk{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:8px;height:20px;background:linear-gradient(90deg,#5a3a1a,#4a2a0a);border-radius:2px}
+
+  /* هدف‌ها */
+  .target{position:absolute;z-index:3;cursor:pointer;transition:filter .1s}
+  .target:hover{filter:brightness(1.2) drop-shadow(0 0 8px #fff)}
+  .target-body{width:100%;height:100%;border-radius:50%;position:relative;border:4px solid #4a2a0a;box-shadow:0 6px 15px rgba(0,0,0,.8), inset 0 0 12px rgba(0,0,0,.5)}
+  .target-stand{width:4px;height:35px;background:linear-gradient(90deg,#3a2a1a,#5a3a2a);margin:0 auto;box-shadow:2px 0 4px rgba(0,0,0,.6)}
+  .target.hit .target-body{animation:hit .6s forwards}
+  @keyframes hit{30%{transform:scale(1.4) rotate(45deg);background:#ffd700;box-shadow:0 0 30px #ff0}100%{transform:scale(0) rotate(360deg);opacity:0}}
+
+  /* تفنگ */
+  #rifle{position:absolute;bottom:-30px;right:8%;width:360px;height:310px;z-index:8;pointer-events:none;transform-origin:bottom right;transition:transform .1s;filter:drop-shadow(0 10px 15px rgba(0,0,0,0.7))}
+  #rifle.kick{transform:translateY(-12px) rotate(-4deg)}
+  .rifle-stock{position:absolute;bottom:0;right:0;width:200px;height:100px;background:linear-gradient(160deg,#7b4a2a,#3a1f0a 60%,#1e0e04);border-radius:25px 70px 10px 10px;box-shadow:inset -10px -15px 20px rgba(0,0,0,.7), inset 5px 5px 10px rgba(255,255,255,0.15);border:2px solid #2a1a0a}
+  .rifle-barrel{position:absolute;bottom:70px;right:130px;width:240px;height:26px;background:linear-gradient(180deg,#888 0%,#111 40%,#555 100%);border-radius:6px;box-shadow:0 6px 10px rgba(0,0,0,0.8), inset 0 2px 4px rgba(255,255,255,0.2);border:1px solid #000}
+  .rifle-barrel::after{content:'';position:absolute;top:2px;left:5px;right:5px;height:4px;background:rgba(255,255,255,0.3);border-radius:2px}
+  .rifle-scope{position:absolute;bottom:100px;right:190px;width:110px;height:40px;background:linear-gradient(180deg,#1a1a1a,#000);border-radius:10px;border:3px solid #555;box-shadow:inset 0 2px 6px rgba(255,255,255,0.3),0 4px 8px rgba(0,0,0,0.8)}
+  .rifle-scope::before,.rifle-scope::after{content:'';position:absolute;top:-8px;width:14px;height:14px;background:#444;border-radius:3px;border:1px solid #222}
+  .rifle-scope::before{left:8px}.rifle-scope::after{right:8px}
+  .lens{position:absolute;left:8px;top:8px;width:20px;height:24px;background:radial-gradient(circle at 30% 30%,#9cf,#1e90ff);border-radius:8px;border:2px solid #ccc}
+  .rifle-trigger-guard{position:absolute;bottom:10px;right:140px;width:40px;height:50px;border:4px solid #444;border-radius:50%;border-top-color:transparent;border-right-color:transparent;transform:rotate(-30deg)}
+  .rifle-trigger{position:absolute;bottom:25px;right:150px;width:16px;height:28px;background:#222;border-radius:0 0 10px 10px;border:1px solid #555}
+
+  /* اسلحه‌های ویژه */
+  #rifle.gun-2 .rifle-stock{background:linear-gradient(160deg,#3a4a5a,#1e2a3a,#0a0a1a);border-color:#4a5a6a}
+  #rifle.gun-2 .rifle-barrel{background:linear-gradient(180deg,#aaa,#333,#aaa);height:30px}
+  #rifle.gun-3 .rifle-stock{background:linear-gradient(160deg,#ffd700,#b8860b 40%,#000 80%);box-shadow:0 0 25px #ffd700, inset -10px -15px 20px rgba(0,0,0,.7);border-color:#ffd700}
+  #rifle.gun-3 .rifle-barrel{background:linear-gradient(180deg,#ffd700,#222,#ffd700);height:32px;width:260px;right:120px}
+  #rifle.gun-3 .rifle-scope{background:linear-gradient(180deg,#000,#222);border-color:#ffd700}
+
+  /* دوربین */
+  #scope{position:fixed;width:220px;height:220px;border:6px solid #1a1a1a;border-radius:50%;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,.65), inset 0 0 30px rgba(0,0,0,.8);z-index:15;transform:translate(-50%,-50%);display:none}
+  #scope::before,#scope::after{content:'';position:absolute;background:rgba(255,50,50,.95)}
+  #scope::before{left:50%;top:8%;bottom:8%;width:1.5px;transform:translateX(-50%)}
+  #scope::after{top:50%;left:8%;right:8%;height:1.5px;transform:translateY(-50%)}
+  #scope-dot{position:absolute;top:50%;left:50%;width:5px;height:5px;background:red;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 8px red}
+
+  /* لوله‌ی شلیک */
+  #muzzle{position:absolute;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,#fff,#ffd700 30%,transparent 70%);pointer-events:none;opacity:0;z-index:9;filter:blur(4px)}
+  #muzzle.flash{animation:flash .18s}
+  @keyframes flash{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(2.2)}}
+
+  .particle{position:absolute;width:6px;height:6px;background:#8b5a2b;border-radius:50%;pointer-events:none;z-index:5;animation:particleFly .6s forwards;box-shadow:0 0 4px rgba(0,0,0,0.5)}
+  @keyframes particleFly{0%{opacity:1;transform:translate(0,0) rotate(0deg) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(360deg) scale(0)}}
+
+  /* لرزش صفحه */
+  @keyframes shake{0%,100%{transform:translate(0)}20%{transform:translate(-4px,2px)}40%{transform:translate(4px,-2px)}60%{transform:translate(-2px,-4px)}80%{transform:translate(2px,4px)}}
+  .shake{animation:shake .2s ease-in-out}
+
+  /* دسته‌ی کنترل */
+  #joystick{position:absolute;bottom:30px;left:30px;width:120px;height:120px;background:rgba(255,255,255,0.12);border-radius:50%;z-index:20;touch-action:none;border:2px solid rgba(255,255,255,0.2);backdrop-filter:blur(4px)}
+  #stick{position:absolute;width:50px;height:50px;background:rgba(255,255,255,0.5);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 15px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.8)}
+  #fireBtn{position:absolute;bottom:50px;right:40px;width:80px;height:80px;background:linear-gradient(180deg,#e74c3c,#a8231c);border-radius:50%;z-index:20;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:bold;color:#fff;border:4px solid #641e16;box-shadow:0 8px 0 #4a120e,0 10px 20px rgba(0,0,0,0.5);cursor:pointer;touch-action:manipulation}
+  #fireBtn:active{transform:translateY(4px);box-shadow:0 3px 0 #4a120e}
+
+  #nextLevelBtn{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100;display:none;padding:22px 48px;font-size:2rem;background:#2ecc71;color:#fff;border:4px solid #ffd700;border-radius:20px;box-shadow:0 10px 0 #1e7e34,0 0 40px rgba(255,215,0,0.7);cursor:pointer;font-weight:bold;text-shadow:2px 2px 0 #000}
+  #nextLevelBtn:hover{filter:brightness(1.1)}
+
+  /* فروشگاه */
+  .shop-item{background:rgba(0,0,0,.5);padding:16px;margin:8px;border-radius:15px;text-align:center;width:280px;border:1px solid #ffd700;backdrop-filter:blur(4px)}
+  .shop-item h3{color:#ffd700}
+  #shopList{display:flex;flex-direction:column;align-items:center;margin-top:10px;max-height:75vh;overflow-y:auto}
+
+  /* مودال */
+  #modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:100}
+  #modal.active{display:flex}
+  .modal-box{background:#1b5a3a;padding:25px;border-radius:20px;text-align:center;border:3px solid #ffd700;max-width:90%;box-shadow:0 0 30px rgba(0,0,0,0.7)}
+  #msg{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.9);padding:10px 28px;border-radius:25px;z-index:50;display:none;font-weight:bold;border:1px solid #ffd700}
+  #levelStart{position:absolute;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:30}
+  #levelStart.active{display:flex}
+  #levelStart h2{font-size:2.8rem;color:#ffd700;margin-bottom:15px;text-shadow:0 0 20px #ffd700}
+  #exitBtn{position:absolute;top:60px;right:10px;z-index:11;background:#e74c3c;color:#fff;border:none;padding:8px 18px;border-radius:10px;font-weight:bold;cursor:pointer;box-shadow:0 4px 0 #62140e}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="screen active" id="auth">
+    <h1>🎯 تفنگ شکاری</h1>
+    <div>
+      <h2 style="margin-bottom:15px">ورود</h2>
+      <div><input id="userName" placeholder="نام کاربری" /></div>
+      <div><input id="userPass" type="password" placeholder="رمز عبور" /></div>
+      <button class="btn green" onclick="doAuth()">ورود / ثبت نام</button>
+      <p style="margin-top:10px;font-size:.9rem;opacity:.8">اگر حساب نداری، همین اطلاعات ثبت نام میشه</p>
+    </div>
+  </div>
+
+  <div class="screen" id="menu">
+    <h1>🎯 تفنگ شکاری</h1>
+    <div>خوش اومدی <b id="whoami"></b></div>
+    <div class="record">🪙 سکه: <span id="menuCoins">0</span></div>
+    <div class="record">🏆 رکورد بهترین مرحله: <span id="bestLvl">0</span></div>
+    <button class="btn" onclick="startGame()">شروع</button>
+    <button class="btn" onclick="showScreen('shop')">خرید تفنگ</button>
+    <button class="btn red" onclick="logout()">خروج از حساب</button>
+  </div>
+
+  <div class="screen" id="shop">
+    <button class="btn back" onclick="showScreen('menu')">← بازگشت</button>
+    <h1>🔫 فروشگاه</h1>
+    <div>سکه‌ها: <span id="shopCoins">0</span> 🪙</div>
+    <div id="shopList"></div>
+  </div>
+
+  <div class="screen" id="game">
+    <div id="hud">
+      <div>مرحله: <span id="lvl">1</span>/20</div>
+      <div>جان: <span id="lives">❤️❤️❤️❤️❤️</span></div>
+      <div>هدف: <span id="hitCount">0</span>/<span id="hitNeed">0</span></div>
+      <div>🪙 <span id="gameCoins">0</span></div>
+    </div>
+    <button id="exitBtn" onclick="exitGame()">خروج</button>
+    <div id="gameArea">
+      <div id="sky">
+        <div class="cloud cloud1" style="width:140px;height:70px;top:8%;left:15%"></div>
+        <div class="cloud cloud2" style="width:180px;height:80px;top:20%;left:60%"></div>
+        <div class="cloud cloud3" style="width:110px;height:55px;top:40%;left:40%"></div>
+        <div class="cloud cloud4" style="width:160px;height:75px;top:12%;left:-10%"></div>
+      </div>
+      <div id="mountains">
+        <div class="mountain mountain1"></div>
+        <div class="mountain mountain2"></div>
+        <div class="mountain mountain3"></div>
+      </div>
+      <div id="ground"></div>
+      <div id="muzzle"></div>
+      <div id="rifle">
+        <div class="rifle-barrel"></div>
+        <div class="rifle-scope"><div class="lens"></div></div>
+        <div class="rifle-stock"></div>
+        <div class="rifle-trigger-guard"></div>
+        <div class="rifle-trigger"></div>
+      </div>
+    </div>
+    <div id="joystick"><div id="stick"></div></div>
+    <button id="fireBtn" onmousedown="fireAtScope()" ontouchstart="fireAtScope(); event.preventDefault();">شلیک</button>
+    <button id="nextLevelBtn" class="btn green" onclick="goNextLevel()">🎯 مرحله بعد</button>
+    <div id="levelStart"><h2 id="lvlText">مرحله 1</h2><div>آماده شو!</div></div>
+  </div>
+
+  <div id="scope"><div id="scope-dot"></div></div>
+
+  <div id="modal">
+    <div class="modal-box">
+      <p id="modalText"></p>
+      <button class="btn green" id="modalYes">آره</button>
+      <button class="btn red" id="modalNo">نه</button>
+    </div>
+  </div>
+  <div id="msg"></div>
+</div>
+
+<script>
+  // همه‌ی کدهای جاوااسکریپت دقیقاً مثل قبل، فقط تابع flashMuzzle و spawnParticles کمی بهبود داده شدن.
+  let ac;
+  function ensureAC(){ if(!ac) ac = new (window.AudioContext||window.webkitAudioContext)(); return ac; }
+  function beep(freq, dur, type='sine', vol=.2){
+    try{
+      const a = ensureAC();
+      const o = a.createOscillator(), g = a.createGain();
+      o.type=type; o.frequency.value=freq;
+      g.gain.value=vol;
+      o.connect(g).connect(a.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.001, a.currentTime+dur);
+      o.stop(a.currentTime+dur);
+    }catch(e){}
+  }
+  function sfxShoot(){ beep(120,.15,'sawtooth',.3); setTimeout(()=>beep(80,.1,'square',.2),30); }
+  function sfxHit(){ beep(880,.08,'square',.25); setTimeout(()=>beep(1320,.1,'sine',.2),60); }
+  function sfxMiss(){ beep(200,.2,'triangle',.2); }
+  function sfxLevel(){ beep(523,.12); setTimeout(()=>beep(659,.12),120); setTimeout(()=>beep(784,.2),240); }
+  function sfxLose(){ beep(300,.2,'sawtooth',.3); setTimeout(()=>beep(200,.3,'sawtooth',.3),200); setTimeout(()=>beep(100,.5,'sawtooth',.3),450); }
+  function sfxBuy(){ beep(700,.08); setTimeout(()=>beep(900,.12),80); }
+
+  const guns = [
+    { id:0, name:'تفنگ اولیه', price:0, quality:1, range:60, cls:'gun-1' },
+    { id:1, name:'تفنگ ضعیف', price:300, quality:2, range:75, cls:'gun-1' },
+    { id:2, name:'تفنگ متوسط', price:600, quality:3, range:95, cls:'gun-2' },
+    { id:3, name:'اسنایپر حرفه‌ای', price:700, quality:5, range:125, cls:'gun-3' },
+  ];
+
+  const targetColors = [
+    'radial-gradient(circle,#fff 8%,#000 10%,#fff 12%,#dc3545 16%,#fff 28%,#dc3545 42%,#fff 52%,#000 60%)',
+    'radial-gradient(circle,#fff 8%,#000 10%,#fff 12%,#007bff 16%,#fff 28%,#007bff 42%,#fff 52%,#000 60%)',
+    'radial-gradient(circle,#fff 8%,#000 10%,#fff 12%,#28a745 16%,#fff 28%,#28a745 42%,#fff 52%,#000 60%)',
+    'radial-gradient(circle,#fff 8%,#000 10%,#fff 12%,#ffc107 16%,#fff 28%,#ffc107 42%,#fff 52%,#000 60%)',
+    'radial-gradient(circle,#fff 8%,#000 10%,#fff 12%,#6f42c1 16%,#fff 28%,#6f42c1 42%,#fff 52%,#000 60%)',
+    'radial-gradient(circle,#fff 8%,#000 10%,#fff 12%,#fd7e14 16%,#fff 28%,#fd7e14 42%,#fff 52%,#000 60%)'
+  ];
+
+  let user = null;
+  let state = { coins:0, owned:[0], activeGun:0, bestLevel:0, level:1, lives:5, hits:0, needed:0, inGame:false, targets:[], levelComplete:false };
+  let aimX = window.innerWidth/2, aimY = window.innerHeight/2;
+  let smoothX = aimX, smoothY = aimY;
+
+  let joystickActive = false;
+  let stickDeltaX = 0, stickDeltaY = 0;
+
+  const menuCoins = document.getElementById('menuCoins');
+  const shopCoins = document.getElementById('shopCoins');
+  const gameCoins = document.getElementById('gameCoins');
+  const bestLvl = document.getElementById('bestLvl');
+  const lvl = document.getElementById('lvl');
+  const lives = document.getElementById('lives');
+  const hitCount = document.getElementById('hitCount');
+  const hitNeed = document.getElementById('hitNeed');
+
+  function userKey(u){ return 'sniperUser_'+u; }
+  function saveUser(){
+    if(!user) return;
+    localStorage.setItem(userKey(user), JSON.stringify({
+      coins:state.coins, owned:state.owned, activeGun:state.activeGun, bestLevel:state.bestLevel
+    }));
+  }
+  function loadUser(u){
+    const raw = localStorage.getItem(userKey(u));
+    if(raw){ const d = JSON.parse(raw); Object.assign(state, d); }
+    else { state.coins=0; state.owned=[0]; state.activeGun=0; state.bestLevel=0; }
+  }
+
+  function doAuth(){
+    ensureAC();
+    const n = document.getElementById('userName').value.trim();
+    const p = document.getElementById('userPass').value.trim();
+    if(!n || !p){ showMsg('نام و رمز الزامیه'); return; }
+    const acc = JSON.parse(localStorage.getItem('sniperAccounts')||'{}');
+    if(acc[n]){
+      if(acc[n]!==p){ showMsg('رمز اشتباهه!'); return; }
+    } else {
+      acc[n]=p; localStorage.setItem('sniperAccounts',JSON.stringify(acc));
+      showMsg('ثبت نام شد ✓');
+    }
+    user = n;
+    localStorage.setItem('sniperCurrent', n);
+    loadUser(n);
+    document.getElementById('whoami').textContent = n;
+    showScreen('menu');
+  }
+  function logout(){ localStorage.removeItem('sniperCurrent'); user=null; showScreen('auth'); }
+
+  window.addEventListener('load', ()=>{
+    const cur = localStorage.getItem('sniperCurrent');
+    if(cur){ user=cur; loadUser(cur); document.getElementById('whoami').textContent=cur; showScreen('menu'); }
+  });
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    updateUI();
+    if(id==='shop') renderShop();
+    const inGame = id==='game';
+    document.getElementById('scope').style.display = inGame ? 'block' : 'none';
+    if(!inGame){ state.inGame=false; clearTargets(); }
+  }
+  function updateUI(){
+    menuCoins.textContent = state.coins;
+    shopCoins.textContent = state.coins;
+    gameCoins.textContent = state.coins;
+    bestLvl.textContent = state.bestLevel;
+    lvl.textContent = state.level;
+    lives.textContent = '❤️'.repeat(state.lives)+'🖤'.repeat(5-state.lives);
+    hitCount.textContent = state.hits;
+    hitNeed.textContent = state.needed;
+    const r = document.getElementById('rifle');
+    r.className=''; r.classList.add(guns[state.activeGun].cls);
+  }
+  function showMsg(t, ms=1200){
+    const m=document.getElementById('msg'); m.textContent=t; m.style.display='block';
+    clearTimeout(m._t); m._t=setTimeout(()=>m.style.display='none', ms);
+  }
+
+  function renderShop(){
+    const list = document.getElementById('shopList'); list.innerHTML='';
+    guns.filter(g=>g.price>0).forEach(g=>{
+      const owned = state.owned.includes(g.id), active = state.activeGun===g.id;
+      const div = document.createElement('div');
+      div.className='shop-item';
+      div.innerHTML = `<h3>${g.name}</h3>
+        <div style="width:180px;height:60px;margin:10px auto;border-radius:8px;background:${g.cls==='gun-1'?'linear-gradient(90deg,#555,#8b4513)':g.cls==='gun-2'?'linear-gradient(90deg,#444,#2c3e50)':'linear-gradient(90deg,#111,#ffd700,#111);box-shadow:0 0 20px #ffd700'}"></div>
+        <p>کیفیت: ${'⭐'.repeat(g.quality)}</p>
+        <p>برد: ${g.range}</p>
+        <p>قیمت: ${g.price} 🪙</p>
+        ${owned ? (active ? '<p class="owned">✓ فعال</p>' : '<button class="btn green" onclick="equip('+g.id+')">انتخاب</button>') : '<button class="btn" onclick="tryBuy('+g.id+')">خرید</button>'}`;
+      list.appendChild(div);
+    });
+  }
+  function equip(id){ state.activeGun=id; saveUser(); renderShop(); showMsg('فعال شد'); }
+  function tryBuy(id){
+    const g = guns.find(x=>x.id===id);
+    openModal(`آیا میخواهید «${g.name}» را با ${g.price} سکه بخرید؟`, ()=>{
+      if(state.coins < g.price){ showMsg('سکه کافی نیست!'); sfxMiss(); return; }
+      state.coins -= g.price; state.owned.push(id); state.activeGun=id;
+      saveUser(); renderShop(); updateUI(); showMsg('خریداری شد!'); sfxBuy();
+    });
+  }
+  function openModal(text, onYes){
+    document.getElementById('modalText').textContent = text;
+    const m = document.getElementById('modal'); m.classList.add('active');
+    document.getElementById('modalYes').onclick=()=>{ m.classList.remove('active'); onYes(); };
+    document.getElementById('modalNo').onclick=()=>m.classList.remove('active');
+  }
+
+  function startGame(){ ensureAC(); state.level=1; state.lives=5; state.levelComplete=false; showScreen('game'); startLevel(); }
+  function exitGame(){
+    openModal('از بازی خارج بشی؟ پیشرفت این دور از دست میره.', ()=>{ showScreen('menu'); });
+  }
+  function startLevel(){
+    state.hits=0;
+    state.lives = 5;
+    state.needed = Math.min(3 + state.level, 20);
+    state.inGame=false; state.levelComplete=false;
+    clearTargets(); updateUI();
+    document.getElementById('nextLevelBtn').style.display='none';
+    const ls = document.getElementById('levelStart');
+    document.getElementById('lvlText').textContent = 'مرحله ' + state.level;
+    ls.classList.add('active');
+    sfxLevel();
+    setTimeout(()=>{ ls.classList.remove('active'); state.inGame=true; spawnTargets(); spawnTrees(); }, 1200);
+  }
+  function clearTargets(){
+    document.querySelectorAll('.target,.particle,.tree').forEach(t=>t.remove());
+    state.targets = [];
+  }
+
+  function spawnTrees(){
+    const area = document.getElementById('gameArea');
+    area.querySelectorAll('.tree').forEach(t=>t.remove());
+    for(let i=0;i<7;i++){
+      const tree = document.createElement('div');
+      tree.className='tree';
+      tree.style.left = (Math.random()*90)+'%';
+      tree.style.bottom = (20 + Math.random()*15)+'%';
+      tree.style.transform = `scale(${0.7+Math.random()*1.3})`;
+      tree.innerHTML = '<div class="trunk"></div>';
+      area.appendChild(tree);
+    }
+  }
+
+  function spawnTargets(){
+    if(!state.inGame || state.levelComplete) return;
+    const gun = guns[state.activeGun];
+    const area = document.getElementById("gameArea");
+    const W = area.clientWidth;
+    const H = area.clientHeight;
+    const maxTargets = Math.min(3 + Math.floor(state.level / 2), 10);
+    while(area.querySelectorAll(".target:not([data-dead])").length < maxTargets){
+      const depth = 0.3 + Math.random()*0.7;
+      const size = 28 + depth*50*(gun.range/80);
+      const x = Math.random()*(W-size);
+      const y = H*0.25 + (1-depth)*H*0.05 + Math.random()*H*0.25;
+      const t = document.createElement("div");
+      t.className = "target";
+      t.style.width = size+"px";
+      t.style.height = (size+30)+"px";
+      t.style.left = x+"px";
+      t.style.top = y+"px";
+      const color = targetColors[Math.floor(Math.random()*targetColors.length)];
+      t.innerHTML = `<div class="target-body" style="width:${size}px;height:${size}px;background:${color}"></div><div class="target-stand"></div>`;
+      if(Math.random()<0.4){
+        t.dataset.moving="1";
+        t.dataset.dir=Math.random()<0.5?"1":"-1";
+        t.dataset.speed=0.5+Math.random()*1.2+state.level*0.05;
+        t.dataset.x=x;
+      }
+      area.appendChild(t);
+      state.targets.push(t);
+    }
+  }
+
+  function spawnParticles(x,y){
+    for(let i=0;i<10;i++){
+      const p = document.createElement('div');
+      p.className='particle';
+      const angle = Math.random()*Math.PI*2;
+      const dist = 20+Math.random()*40;
+      p.style.setProperty('--dx', Math.cos(angle)*dist+'px');
+      p.style.setProperty('--dy', Math.sin(angle)*dist+'px');
+      p.style.left = x+'px';
+      p.style.top = y+'px';
+      p.style.background = i%2===0 ? '#8b5a2b' : '#f5deb3';
+      document.getElementById('gameArea').appendChild(p);
+      setTimeout(()=>p.remove(), 600);
+    }
+  }
+
+  function fireAtScope(){
+    if(!state.inGame || state.levelComplete) return;
+    const x = smoothX, y = smoothY;
+    const el = document.elementFromPoint(x, y);
+    if(el && el.closest('.target') && !el.closest('.target').dataset.dead){
+      hitTarget(el.closest('.target'));
+    } else {
+      missShot(x, y);
+    }
+  }
+
+  function tick(){
+    const area = document.getElementById('gameArea');
+    const W = area.clientWidth;
+    state.targets.forEach(t=>{
+      if(!t.isConnected || t.dataset.dead || !t.dataset.moving) return;
+      let x = parseFloat(t.dataset.x);
+      let dir = parseFloat(t.dataset.dir);
+      const speed = parseFloat(t.dataset.speed);
+      const size = parseFloat(t.style.width);
+      x += dir*speed;
+      if(x<0){ x=0; dir=1; }
+      if(x>W-size){ x=W-size; dir=-1; }
+      t.dataset.x = x; t.dataset.dir = dir;
+      t.style.left = x+'px';
+    });
+    if(joystickActive){
+      const speed = 3;
+      aimX += stickDeltaX * speed;
+      aimY += stickDeltaY * speed;
+      aimX = Math.max(0, Math.min(aimX, window.innerWidth));
+      aimY = Math.max(0, Math.min(aimY, window.innerHeight));
+    }
+    smoothX += (aimX - smoothX) * 0.15;
+    smoothY += (aimY - smoothY) * 0.15;
+    document.getElementById('scope').style.left = smoothX+'px';
+    document.getElementById('scope').style.top = smoothY+'px';
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  function flashMuzzle(x,y){
+    const m = document.getElementById('muzzle');
+    m.style.left = (x-35)+'px';
+    m.style.top = (y-35)+'px';
+    m.classList.remove('flash'); void m.offsetWidth; m.classList.add('flash');
+    const r = document.getElementById('rifle');
+    r.classList.remove('kick'); void r.offsetWidth; r.classList.add('kick');
+    setTimeout(()=>r.classList.remove('kick'),120);
+    // لرزش صفحه
+    document.getElementById('gameArea').classList.add('shake');
+    setTimeout(()=>document.getElementById('gameArea').classList.remove('shake'),200);
+  }
+
+  function hitTarget(t){
+    if(!state.inGame || t.dataset.dead || state.levelComplete) return;
+    t.dataset.dead = 'true';
+    t.classList.add('hit');
+    const rect = t.getBoundingClientRect();
+    const cx = rect.left+rect.width/2, cy = rect.top+rect.height/2;
+    flashMuzzle(cx, cy);
+    sfxShoot(); sfxHit();
+    spawnParticles(cx, cy);
+    state.coins += 20;
+    state.hits += 1;
+    state.targets = state.targets.filter(x=>x!==t);
+    saveUser(); updateUI();
+    setTimeout(()=>{
+      if(t.isConnected) t.remove();
+      if(state.inGame && !state.levelComplete){ spawnTargets(); }
+      checkLevel();
+    },500);
+  }
+
+  function missShot(x,y){
+    if(!state.inGame || state.levelComplete) return;
+    flashMuzzle(x,y);
+    sfxShoot();
+    state.lives -= 1; updateUI();
+    sfxMiss();
+    showMsg('تیر خطا! -۱ جان', 700);
+    if(state.lives <= 0){
+      state.inGame=false;
+      sfxLose();
+      setTimeout(()=>{
+        if(state.level > state.bestLevel){ state.bestLevel = state.level; saveUser(); }
+        alert('باختی! بهترین مرحله شما: '+state.bestLevel);
+        showScreen('menu');
+      }, 400);
+    } else {
+      spawnTargets();
+    }
+  }
+
+  function checkLevel(){
+    if(state.hits >= state.needed && !state.levelComplete){
+      state.levelComplete = true;
+      state.inGame = false;
+      if(state.level > state.bestLevel){ state.bestLevel = state.level; saveUser(); }
+      if(state.level >= 20){
+        setTimeout(()=>{ alert('🏆 برنده شدی! همه مراحل تمام شد.'); showScreen('menu'); }, 400);
+      } else {
+        document.getElementById('nextLevelBtn').style.display='block';
+      }
+    }
+  }
+
+  function goNextLevel(){
+    state.level++;
+    state.levelComplete = false;
+    document.getElementById('nextLevelBtn').style.display='none';
+    startLevel();
+  }
+
+  // Joystick
+  const joystick = document.getElementById('joystick');
+  const stick = document.getElementById('stick');
+  const maxRadius = 45;
+  function handleJoystickStart(e){ e.preventDefault(); joystickActive = true; updateStick(e.touches ? e.touches[0] : e); }
+  function handleJoystickMove(e){ if(!joystickActive) return; e.preventDefault(); updateStick(e.touches ? e.touches[0] : e); }
+  function handleJoystickEnd(e){ joystickActive = false; stickDeltaX = 0; stickDeltaY = 0; stick.style.transform = `translate(-50%,-50%)`; }
+  function updateStick(touch){
+    const rect = joystick.getBoundingClientRect();
+    const centerX = rect.left + rect.width/2;
+    const centerY = rect.top + rect.height/2;
+    let dx = touch.clientX - centerX;
+    let dy = touch.clientY - centerY;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    if(dist > maxRadius){ dx = (dx/dist) * maxRadius; dy = (dy/dist) * maxRadius; }
+    stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    stickDeltaX = dx / maxRadius;
+    stickDeltaY = dy / maxRadius;
+  }
+  joystick.addEventListener('touchstart', handleJoystickStart, {passive: false});
+  joystick.addEventListener('touchmove', handleJoystickMove, {passive: false});
+  joystick.addEventListener('touchend', handleJoystickEnd);
+  joystick.addEventListener('touchcancel', handleJoystickEnd);
+  joystick.addEventListener('mousedown', handleJoystickStart);
+  window.addEventListener('mousemove', (e)=>{ if(joystickActive) handleJoystickMove(e); });
+  window.addEventListener('mouseup', handleJoystickEnd);
+  document.addEventListener('mousemove', e=>{ if(!joystickActive && state.inGame){ aimX = e.clientX; aimY = e.clientY; } });
+</script>
+</body>
+</html>
