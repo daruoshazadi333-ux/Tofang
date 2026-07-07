@@ -17,9 +17,15 @@
   .btn.green{background:linear-gradient(180deg,#66cc8a,#33995b);color:#fff;box-shadow:0 0.8vh 0 #1f6638}
   .btn.red{background:linear-gradient(180deg,#ff6b6b,#cc3333);color:#fff;box-shadow:0 0.8vh 0 #991f1f}
   .btn.back{background:#8899aa;color:#fff;box-shadow:0 0.5vh 0 #556677;position:absolute;top:2vh;left:2vw;padding:1vh 3vw;font-size:1rem}
+  .btn.admin-btn{background:linear-gradient(180deg,#4a4a4a,#222);color:#fff;box-shadow:0 0.8vh 0 #000;margin-top:2vh;font-size:0.9rem;}
   input{padding:1.5vh 2vw;font-size:1rem;margin:1vh 2vw;border-radius:10px;border:2px solid #ffd700;background:#f0fff4;color:#222;width:min(80vw, 260px);text-align:center;box-shadow:inset 0 0.4vh 1.5vh rgba(0,0,0,0.1)}
   .record{background:rgba(255,255,255,0.7);padding:1.5vh 4vw;border-radius:12px;margin:1vh 2vw;border:1px solid #ffd700;backdrop-filter:blur(5px);font-size:1rem;color:#222}
 
+  /* استایل‌های صفحه اصلی و عکس */
+  #menu{background:transparent !important; position:relative;}
+  .menu-bg{position:absolute;inset:0;z-index:0;background-image:url('sniper.jpg');background-size:cover;background-position:center;opacity:0.4;filter:blur(2px);}
+  .menu-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5vh;background:rgba(255,255,255,0.65);backdrop-filter:blur(8px);padding:3vh 5vw;border-radius:20px;box-shadow:0 0 20px rgba(0,0,0,0.2);max-width:90%;min-width:60%;margin:0 auto;color:#222;}
+  
   #hud{position:absolute;top:0;left:0;right:0;padding:1vh 2vw;display:flex;justify-content:space-between;flex-wrap:wrap;background:rgba(255,255,255,0.85);z-index:10;font-size:clamp(0.7rem, 3vw, 1rem);font-weight:bold;border-bottom:2px solid #ffd700;backdrop-filter:blur(8px);color:#111}
   #hud div{background:rgba(255,215,0,0.2);padding:0.5vh 2vw;border-radius:8px;margin:0.5vh 0}
 
@@ -57,23 +63,10 @@
   .tree .trunk{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:1.5vw;height:3vw;background:linear-gradient(90deg,#6d4c41,#5d4037);border-radius:2px}
 
   .target{position:absolute;z-index:3;cursor:pointer;transform-origin:center bottom}
-  .target-body{
-    width:100%;height:100%;border-radius:50%;position:relative;
-    background:radial-gradient(circle at 30% 30%, #fff 5%, #aaa 20%, #666 40%, #333 70%, #111 90%);
-    border:6px solid #5d4037;
-    box-shadow:0 10px 20px rgba(0,0,0,.7), inset 0 -5px 10px rgba(0,0,0,.6), 0 0 30px rgba(0,0,0,.4);
-  }
-  .target-body::after{
-    content:'';position:absolute;top:8%;left:8%;right:8%;bottom:8%;border-radius:50%;
-    border:2px dashed rgba(255,255,255,0.6);
-    animation:pulseDash 1.5s linear infinite;
-  }
+  .target-body{width:100%;height:100%;border-radius:50%;position:relative;background:radial-gradient(circle at 30% 30%, #fff 5%, #aaa 20%, #666 40%, #333 70%, #111 90%);border:6px solid #5d4037;box-shadow:0 10px 20px rgba(0,0,0,.7), inset 0 -5px 10px rgba(0,0,0,.6), 0 0 30px rgba(0,0,0,.4);}
+  .target-body::after{content:'';position:absolute;top:8%;left:8%;right:8%;bottom:8%;border-radius:50%;border:2px dashed rgba(255,255,255,0.6);animation:pulseDash 1.5s linear infinite;}
   @keyframes pulseDash{0%,100%{opacity:0.6}50%{opacity:1}}
-  .target-stand{
-    width:6px;height:8vw;background:linear-gradient(90deg,#8d6e63,#5d4037);
-    margin:0 auto;box-shadow:2px 0 5px rgba(0,0,0,.7);
-    border-radius:3px;
-  }
+  .target-stand{width:6px;height:8vw;background:linear-gradient(90deg,#8d6e63,#5d4037);margin:0 auto;box-shadow:2px 0 5px rgba(0,0,0,.7);border-radius:3px;}
   .target.wobble{animation:wobbleTarget 2s ease-in-out infinite}
   @keyframes wobbleTarget{0%,100%{transform:rotate(0deg)}25%{transform:rotate(1.5deg)}75%{transform:rotate(-1.5deg)}}
 
@@ -107,7 +100,6 @@
   #muzzle.flash{animation:flash .18s}
   @keyframes flash{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(2.2)}}
 
-  /* Bullet */
   .bullet{position:absolute;width:8px;height:4px;background:linear-gradient(90deg,#ffd700,#fff);border-radius:2px;z-index:25;pointer-events:none;box-shadow:0 0 8px #ffd700,0 0 15px #ffaa00;transform-origin:left center;transition:transform 0.25s linear, left 0.25s linear, top 0.25s linear}
 
   .particle{position:absolute;width:2vw;height:2vw;max-width:8px;max-height:8px;background:#8b5a2b;border-radius:50%;pointer-events:none;z-index:5;animation:particleFly .6s forwards;box-shadow:0 0 4px rgba(0,0,0,0.5)}
@@ -139,23 +131,30 @@
   <div class="screen active" id="auth">
     <h1>🎯 تفنگ شکاری</h1>
     <div>
-      <h2 style="margin-bottom:15px; color:#222">ورود</h2>
+      <h2 style="margin-bottom:15px; color:#222">ورود / ثبت نام</h2>
       <div><input id="userName" placeholder="نام کاربری" /></div>
       <div><input id="userPass" type="password" placeholder="رمز عبور" /></div>
+      <div><input id="userPhone" type="tel" placeholder="شماره موبایل (مثلاً 0912...)" /></div>
+      
       <button class="btn green" onclick="doAuth()">ورود / ثبت نام</button>
-      <p style="margin-top:10px;font-size:0.9rem;opacity:.8">اگر حساب نداری، همین اطلاعات ثبت نام میشه</p>
+      <p style="margin-top:10px;font-size:0.9rem;opacity:.8">اگر حساب ندارید، با همین اطلاعات ثبت‌نام می‌شوید.</p>
     </div>
   </div>
 
+  <!-- صفحه اصلی با پس‌زمینه عکس -->
   <div class="screen" id="menu">
-    <h1>🎯 تفنگ شکاری</h1>
-    <div style="color:#222">خوش اومدی <b id="whoami"></b></div>
-    <div class="record">🪙 سکه: <span id="menuCoins">0</span></div>
-    <div class="record">🏆 رکورد بهترین مرحله: <span id="bestLvl">0</span></div>
-    <button class="btn" onclick="startGame()">شروع</button>
-    <button class="btn" onclick="showScreen('shop')">خرید تفنگ</button>
-    <button class="btn" onclick="alert('سلام اسم یارو خوبی این بازی بیست مرحله هست و متنعم که برنده میشی سازنده این بازی آقای امیرمحمد')">درباره ما</button>
-    <button class="btn red" onclick="logout()">خروج از حساب</button>
+    <div class="menu-bg"></div>
+    <div class="menu-content">
+      <h1>🎯 تفنگ شکاری</h1>
+      <div style="color:#222">خوش اومدی <b id="whoami"></b></div>
+      <div class="record">🪙 سکه: <span id="menuCoins">0</span></div>
+      <div class="record">🏆 رکورد بهترین مرحله: <span id="bestLvl">0</span></div>
+      <button class="btn" onclick="startGame()">شروع</button>
+      <button class="btn" onclick="showScreen('shop')">خرید تفنگ</button>
+      <button class="btn" onclick="showAbout()">درباره ما</button>
+      <button class="btn red" onclick="logout()">خروج از حساب</button>
+      <button class="btn admin-btn" onclick="showAdminLogin()">پنل ادمین</button>
+    </div>
   </div>
 
   <div class="screen" id="shop">
@@ -163,6 +162,17 @@
     <h1>🔫 فروشگاه</h1>
     <div style="color:#222">سکه‌ها: <span id="shopCoins">0</span> 🪙</div>
     <div id="shopList"></div>
+  </div>
+
+  <!-- پنل ادمین -->
+  <div class="screen" id="admin">
+    <button class="btn back" onclick="showScreen('menu')">← بازگشت</button>
+    <h1>🔧 پنل مدیریت</h1>
+    <div style="color:#222; margin-top:2vh; font-size:1.2rem; font-weight:bold;">به پنل ادمین خوش آمدید!</div>
+    <div style="background:rgba(255,255,255,0.5); padding:2vh 3vw; border-radius:12px; margin-top:2vh; text-align:center;">
+        <p>💰 سکه‌های فعلی: <span id="adminCoins" style="font-weight:bold; color:#b8860b;">0</span></p>
+    </div>
+    <button class="btn green" onclick="setInfiniteCoins()" style="margin-top:2vh; font-size:1.5rem; padding:2vh 6vw;">💰 بی‌نهایت کردن سکه‌ها</button>
   </div>
 
   <div class="screen" id="game">
@@ -215,7 +225,21 @@
       <button class="btn red" id="modalNo">نه</button>
     </div>
   </div>
+  
   <div id="msg"></div>
+
+  <!-- مودال ورود به پنل ادمین -->
+  <div id="adminModal" style="position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:200;">
+      <div style="background:#fff;padding:4vh 4vw;border-radius:20px;text-align:center;border:3px solid #ffd700;box-shadow:0 0 40px rgba(0,0,0,0.6);max-width:85vw;">
+          <h2 style="color:#222;margin-bottom:2vh; font-size:clamp(1.5rem, 5vw, 2.5rem);">👑 ورود ادمین</h2>
+          <input id="adminPassInput" type="password" placeholder="رمز عبور ادمین را وارد کنید" style="width:80%;padding:1.5vh 2vw;font-size:1rem;border-radius:10px;border:2px solid #222;text-align:center;margin-bottom:2vh;outline:none;" />
+          <div style="display:flex; justify-content:center; gap:2vw;">
+              <button class="btn green" onclick="verifyAdmin()">ورود</button>
+              <button class="btn red" onclick="document.getElementById('adminModal').style.display='none'">انصراف</button>
+          </div>
+      </div>
+  </div>
+
 </div>
 
 <script>
@@ -263,7 +287,7 @@
 
   let joystickActive = false;
   let stickDeltaX = 0, stickDeltaY = 0;
-  let bulletInFlight = false; // جلوگیری از شلیک همزمان
+  let bulletInFlight = false; 
 
   const menuCoins = document.getElementById('menuCoins');
   const shopCoins = document.getElementById('shopCoins');
@@ -273,6 +297,9 @@
   const lives = document.getElementById('lives');
   const hitCount = document.getElementById('hitCount');
   const hitNeed = document.getElementById('hitNeed');
+  const adminCoins = document.getElementById('adminCoins');
+
+  const ADMIN_PASSWORD = 'jehdgxhxbz&&&******hdhdhxbxbd'; // رمز عبور ادمین
 
   function userKey(u){ return 'sniperUser_'+u; }
   function saveUser(){
@@ -291,20 +318,32 @@
     ensureAC();
     const n = document.getElementById('userName').value.trim();
     const p = document.getElementById('userPass').value.trim();
-    if(!n || !p){ showMsg('نام و رمز الزامیه'); return; }
-    const acc = JSON.parse(localStorage.getItem('sniperAccounts')||'{}');
-    if(acc[n]){
-      if(acc[n]!==p){ showMsg('رمز اشتباهه!'); return; }
-    } else {
-      acc[n]=p; localStorage.setItem('sniperAccounts',JSON.stringify(acc));
-      showMsg('ثبت نام شد ✓');
+    const ph = document.getElementById('userPhone').value.trim();
+
+    if(!n || !p || !ph){ showMsg('لطفاً تمام فیلدها (نام، رمز و موبایل) را پر کنید!'); return; }
+    if(!/^09\d{9}$/.test(ph)) {
+        showMsg('شماره موبایل وارد شده معتبر نیست (مثال: 09123456789)'); 
+        return;
     }
+
+    const acc = JSON.parse(localStorage.getItem('sniperAccounts')||'{}');
+    
+    if(acc[n]){
+      if(acc[n].pass !== p){ showMsg('رمز عبور اشتباه است!'); return; }
+      if(acc[n].phone !== ph){ showMsg('شماره موبایل با این حساب کاربری مطابقت ندارد!'); return; }
+    } else {
+      acc[n] = { pass: p, phone: ph };
+      localStorage.setItem('sniperAccounts', JSON.stringify(acc));
+      showMsg('ثبت نام با موفقیت انجام شد ✓');
+    }
+
     user = n;
     localStorage.setItem('sniperCurrent', n);
     loadUser(n);
     document.getElementById('whoami').textContent = n;
     showScreen('menu');
   }
+
   function logout(){ localStorage.removeItem('sniperCurrent'); user=null; showScreen('auth'); }
 
   window.addEventListener('load', ()=>{
@@ -325,6 +364,7 @@
     menuCoins.textContent = state.coins;
     shopCoins.textContent = state.coins;
     gameCoins.textContent = state.coins;
+    adminCoins.textContent = state.coins;
     bestLvl.textContent = state.bestLevel;
     lvl.textContent = state.level;
     lives.textContent = '❤️'.repeat(state.lives)+'🖤'.repeat(5-state.lives);
@@ -367,6 +407,39 @@
     const m = document.getElementById('modal'); m.classList.add('active');
     document.getElementById('modalYes').onclick=()=>{ m.classList.remove('active'); onYes(); };
     document.getElementById('modalNo').onclick=()=>m.classList.remove('active');
+  }
+
+  // توابع پنل ادمین
+  function showAdminLogin() {
+      document.getElementById('adminPassInput').value = '';
+      document.getElementById('adminModal').style.display = 'flex';
+  }
+  function verifyAdmin() {
+      const pass = document.getElementById('adminPassInput').value;
+      if(pass === ADMIN_PASSWORD) {
+          document.getElementById('adminModal').style.display = 'none';
+          showScreen('admin');
+          showMsg('🎉 ورود به پنل ادمین موفقیت‌آمیز بود!');
+      } else {
+          showMsg('❌ رمز عبور ادمین اشتباه است!');
+      }
+  }
+  function setInfiniteCoins() {
+      state.coins = 999999999;
+      saveUser();
+      updateUI();
+      showMsg('💰 سکه‌ها بی‌نهایت شدند! (۹۹۹,۹۹۹,۹۹۹)');
+  }
+
+  function showAbout() {
+      const userName = user || 'کاربر عزیز';
+      alert(`سلام ${userName}! 👋
+
+این بازی شامل 20 مرحله چالش‌برانگیز است.
+هدف: نشانه‌گیری دقیق و عبور از تمام مراحل!
+
+سازنده این بازی آقای امیرمحمد است.
+از بازی لذت ببرید! 🎯`);
   }
 
   function startGame(){ ensureAC(); state.level=1; state.lives=5; state.levelComplete=false; showScreen('game'); startLevel(); }
@@ -456,7 +529,6 @@
   function getMuzzlePosition(){
     const rifle = document.getElementById('rifle');
     const rect = rifle.getBoundingClientRect();
-    // دهانه تفنگ تقریباً در سمت چپ لوله (راست صفحه RTL) 
     return {
       x: rect.left + rect.width * 0.1,
       y: rect.top + rect.height * 0.55
@@ -475,11 +547,9 @@
     bullet.style.top = start.y + 'px';
     document.getElementById('gameArea').appendChild(bullet);
 
-    // محاسبه زاویه چرخش
     const angle = Math.atan2(endY - start.y, endX - start.x) * 180 / Math.PI;
     bullet.style.transform = `rotate(${angle}deg)`;
 
-    // اعمال حرکت
     requestAnimationFrame(() => {
       bullet.style.left = endX + 'px';
       bullet.style.top = endY + 'px';
@@ -488,14 +558,13 @@
     setTimeout(() => {
       if(bullet.isConnected) bullet.remove();
       bulletInFlight = false;
-      // حالا بررسی اصابت
       const el = document.elementFromPoint(endX, endY);
       if(el && el.closest('.target') && !el.closest('.target').dataset.dead){
         hitTarget(el.closest('.target'));
       } else {
         missShot(endX, endY);
       }
-    }, 260); // هماهنگ با transition 0.25s
+    }, 260);
   }
 
   function tick(){
